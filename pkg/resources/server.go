@@ -20,6 +20,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -343,6 +344,7 @@ func (rs *resourceServer) getEnvs(deviceIDs []string) map[string]string {
 	envVals := rs.resourcePool.GetEnvs(deviceIDs)
 	values := ""
 	lastIndex := len(envVals) - 1
+	sort.Strings(envVals)
 	for i, s := range envVals {
 		values += s
 		if i == lastIndex {
@@ -350,6 +352,7 @@ func (rs *resourceServer) getEnvs(deviceIDs []string) map[string]string {
 		}
 		values += ","
 	}
+
 	envs[key] = values
 	return envs
 }
