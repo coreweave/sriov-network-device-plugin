@@ -1,0 +1,25 @@
+image: registry.gitlab.com/coreweave/utility-images/kaniko-alpine:v1.0.0
+
+default:
+  tags:
+    - ord1-tenant
+
+stages:
+  - release
+
+release:
+  stage: release
+  only:
+    refs:
+    - coreweave
+  variables: 
+    DOCKERFILE: $CI_PROJECT_DIR/images/Dockerfile
+  before_script:
+  - apk add git nodejs npm
+  - export HTTP_PROXY=${CACHE_PROXY}
+  - export NO_PROXY=${CACHE_REGISTRY_HOST}
+  - mkdir -p /kaniko/.docker
+  - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+  script:
+  - npm install
+  - npx semantic-release
