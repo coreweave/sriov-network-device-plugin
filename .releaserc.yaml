@@ -25,6 +25,6 @@ analyzeCommits:
     - "BREAKING CHANGES"
 prepare:
 - path: "@semantic-release/exec"
-  publishCmd: |-
+  prepareCmd: |-
     export RELEASE_IMAGE=$CI_REGISTRY_IMAGE/sriov-network-device-plugin:v${nextRelease.version}-cw && 
     /kaniko/executor --context . --dockerfile $DOCKERFILE --destination $RELEASE_IMAGE
