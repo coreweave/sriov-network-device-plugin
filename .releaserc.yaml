@@ -27,4 +27,4 @@ prepare:
 - path: "@semantic-release/exec"
   prepareCmd: |-
     export RELEASE_IMAGE=$CI_REGISTRY_IMAGE/sriov-network-device-plugin:v${nextRelease.version}-cw && 
-    /kaniko/executor --context . --dockerfile $DOCKERFILE --destination $RELEASE_IMAGE
+    /kaniko/executor $KANIKO_ADDTL_ARGS --context . --dockerfile $DOCKERFILE --destination $RELEASE_IMAGE
