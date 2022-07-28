@@ -1,17 +1,20 @@
-image: registry.gitlab.com/coreweave/utility-images/kaniko-alpine:v1.0.7
-
 default:
   tags:
     - ord1-tenant
 
+variables:
+  IMAGE_NAME: $CI_REGISTRY_IMAGE/sriov-network-device-plugin
+
 stages:
+  - build
   - release
 
-release:
-  stage: release
+build:
+  stage: build
   only:
     refs:
     - coreweave
+  image: gcr.io/kaniko-project/executor:debug
   variables: 
     CACHE_REGISTRY_HOST: "kaniko-cache-docker-registry.kaniko.svc"
     CACHE_REGISTRY_PORT: "5000"
@@ -19,12 +22,29 @@ release:
     CACHE_PROXY: "http://193.25.126.17:3128"
     KANIKO_ADDTL_ARGS: "--cache=true --cache-copy-layers=true --cache-repo=${CACHE_REGISTRY_REPO} --skip-tls-verify --insecure"
     DOCKERFILE: $CI_PROJECT_DIR/images/Dockerfile
+    BUILD_IMAGE: $IMAGE_NAME
   before_script:
-  - apk add git nodejs npm
   - export HTTP_PROXY=${CACHE_PROXY}
   - export NO_PROXY=${CACHE_REGISTRY_HOST}
   - mkdir -p /kaniko/.docker
   - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
   script:
+  - /kaniko/executor $KANIKO_ADDTL_ARGS --context . --dockerfile $DOCKERFILE --destination $BUILD_IMAGE --no-push --tarPath $CI_PROJECT_DIR/image.tar
+  artifacts:
+    paths:
+    - $CI_PROJECT_DIR/image.tar
+
+release:
+  stage: release
+  only:
+    refs:
+    - coreweave
+  image: registry.gitlab.com/coreweave/utility-images/crane-node-alpine:v1.0.1
+  before_script:
+  - apk add git
+  - crane auth login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
   - npm install
   - npx semantic-release
+  dependencies:
+  - build

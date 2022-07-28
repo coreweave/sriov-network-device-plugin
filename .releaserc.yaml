@@ -23,10 +23,9 @@ analyzeCommits:
     noteKeywords:
     - "BREAKING CHANGE"
     - "BREAKING CHANGES"
-prepare:
+publish:
 - path: "@semantic-release/exec"
-  prepareCmd: |-
-    export RELEASE_IMAGE=$CI_REGISTRY_IMAGE/sriov-network-device-plugin:v${nextRelease.version}-cw && 
-    /kaniko/executor $KANIKO_ADDTL_ARGS --context . --dockerfile $DOCKERFILE --destination $RELEASE_IMAGE &&
-    apk add git nodejs npm
+  publishCmd: |-
+    export RELEASE_IMAGE=$IMAGE_NAME:v${nextRelease.version}-cw &&
+    crane push $CI_PROJECT_DIR/image.tar $RELEASE_IMAGE
     
